@@ -1,0 +1,20 @@
+1a)	Kernel: Highest privilege mode over the system
+	User:	Access to items is constrained to only the owner of the item.
+	
+1b)	
+	1 - Kernel
+	2 - User
+	3 - Kernel (Programs may rely on system time) 
+	4 - Kernel (Memory allocation for processes)
+		
+2a)	Process starts with 1 thread with its own memory space. 
+	Threads are a line of execution with its own scheduling priority but share the same memory space under the parent process.
+
+2b)	One stack per thread.
+
+3a)	Non Pre-emptive:	Tasks must continue to completion, before the next task begins.
+	Pre-emptive:		Process can be interrupted for higher priority tasks.
+	
+	Why Pre-emptive?
+		e.g. 1 OS should get priority before a process like openning firefox.
+		e.g. 2 Alt+F4 takes precedence over any application processes.
