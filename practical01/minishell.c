@@ -116,8 +116,6 @@ int main(int argk, char *argv[], char *envp[]) {
         if (strcmp(v[0], "cd") == 0) {
             if (chdir(v[1]) == -1) {   // If cd fails
                 perror("chdir fail");  // Print error message
-            } else {
-                printf("cd done");  // Print success message
             }
             continue;  // Continue to the next prompt if cd succeeds
         }
@@ -143,15 +141,11 @@ int main(int argk, char *argv[], char *envp[]) {
                     pids[ampersandCount] = frkRtnVal;                     // Store the PID of the background process
                     printf("[%d] %s done\n", frkRtnVal, currBgProcess);   // Print the PID of the background process
                     fflush(stdout);
-                    ampersand = 0;  // Reset ampersand
-                    continue;
+                    ampersand = 0;      // Reset ampersand
                 } else {                // Wait for child process to terminate
                     wpid = wait(NULL);  // Equivalent to waitpid(-1, NULL, WNOHANG)
                     if (wpid == -1) {
                         perror("waitpid failed");
-                    } else {
-                        printf("[%d] %s done\n", wpid, currBgProcess);
-                        fflush(stdout);
                     }
                 }
                 break;
