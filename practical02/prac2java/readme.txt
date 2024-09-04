@@ -1,0 +1,1 @@
+There is no need to modify Memsim.java or MMU.java. To operate with these files, you will need to adhered to the interface of MMU.java. In addition, the 3 replacement strategies should be implemented by EscMMU.java, LruMMU.java, RandMMU.java.
