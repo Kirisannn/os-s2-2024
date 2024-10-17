@@ -1,35 +1,40 @@
 #!/bin/bash
 
-# Usage message
-usage() {
-    echo "Usage: $0 -l <port> -p \"<pattern>\""
-    exit 1
-}
+# Initialize variables
+port=""
+pattern=""
 
 # Parse arguments into variables port and pattern
 while getopts ":l:p:" opt; do
     case $opt in
         l)
-            port=$OPTARG
+            port=$OPTARG  # Store the port argument
             ;;
         p)
-            pattern=$OPTARG
+            pattern=$OPTARG  # Store the pattern argument
             ;;
         \?)
-            echo "Invalid option: -$OPTARG" >&2
-            usage
+            # Invalid option; exit with an error code
+            exit 1
             ;;
         :)
-            echo "Option -$OPTARG requires an argument." >&2
-            usage
+            # Missing argument; exit with an error code
+            exit 1
             ;;
     esac
 done
 
-# Check if both port and pattern were provided
-if [ -z "$port" ] || [ -z "$pattern" ]; then
-    usage
+# Check conditions to run the Python script with the appropriate arguments
+if [ -n "$port" ] && [ -n "$pattern" ]; then
+    # Both port and pattern are provided
+    python3 assignment3.py -l "$port" -p "$pattern"
+elif [ -n "$pattern" ]; then
+    # Only pattern is provided
+    python3 assignment3.py -p "$pattern"
+elif [ -n "$port" ]; then
+    # Only port is provided
+    python3 assignment3.py -l "$port"
+else
+    # Neither argument is provided
+    python3 assignment3.py
 fi
-
-# Call the Python script with the parsed arguments
-python3 assignment3.py -l "$port" -p "$pattern"

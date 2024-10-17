@@ -15,7 +15,8 @@
                 "12345",
                 "-p",
                 "\"pattern\""
-            ]
+            ],
+            "justMyCode": false
         }
     ]
 }

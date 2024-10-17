@@ -35,3 +35,6 @@ sendJ:
 
 sendK:
 	nc localhost 12345 -d 1 < input/Book_K.txt
+
+clean:
+	rm ./*.txt
