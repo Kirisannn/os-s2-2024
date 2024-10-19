@@ -12,16 +12,19 @@ import subprocess
 from time import sleep
 import socket
 
+
 def start_server(args):
     """Run server with specified arguments."""
     command = ["./assignment3"] + args
     result = subprocess.run(command, capture_output=True, text=True)
     return result
 
+
 def stop_server():
     """Stop the server."""
     command = ["pkill", "-f", "assignment3"]
     subprocess.run(command)
+
 
 def pretty_test(test):
     """Runs each test with segregating lines."""
@@ -30,6 +33,7 @@ def pretty_test(test):
     test()
     print("-" * 60 + "\n")
     stop_server()
+
 
 def test_no_args():
     """Test server with no arguments."""
@@ -51,6 +55,7 @@ def test_no_args():
     else:
         print("TEST RESULT: FAILED")
 
+
 def test_no_port():
     """Test server with no port number."""
     print("TEST START: Starting server without a port number...")
@@ -64,6 +69,7 @@ def test_no_port():
         print("TEST RESULT: PASSED")
     else:
         print("TEST RESULT: FAILED")
+
 
 def test_no_pattern():
     """Test server with no pattern."""
@@ -79,6 +85,7 @@ def test_no_pattern():
     else:
         print("TEST RESULT: FAILED")
 
+
 def test_invalid_port():
     """Test server with an invalid port number."""
     print("TEST START: Starting server with an invalid port number...")
@@ -93,6 +100,7 @@ def test_invalid_port():
     else:
         print("TEST RESULT: FAILED")
 
+
 def test_send():
     """Test receiving a message from the server.
     This test requires the server to be running.
@@ -103,13 +111,15 @@ def test_send():
     Would be better to automate this test, but it is difficult to test
     """
     print("Starting server...")
-    subprocess.Popen(["make"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    subprocess.Popen(
+        ["./testServer.sh"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
     sleep(3)
 
     print("TEST START: Establishing connection...")
 
     # Attempt to send a request to the server
-    command = ["nc", socket.gethostname(), "12345"]
+    command = ["nc", "localhost", "12345"]
     result = subprocess.run(command, input="test", capture_output=True, text=True)
     output = result.stdout
     error = result.stderr
@@ -120,6 +130,7 @@ def test_send():
         print("TEST RESULT: PASSED")
     else:
         print("TEST RESULT: FAILED")
+
 
 if __name__ == "__main__":
     pretty_test(test_no_args)

@@ -274,7 +274,7 @@ def main():
         server_socket = socket.socket(
             socket.AF_INET, socket.SOCK_STREAM
         )  # Create a socket
-        server_socket.bind((socket.gethostname(), port))  # Bind to localhost on port
+        server_socket.bind(("localhost", port))  # Bind to localhost on port
         server_socket.listen(15)  # Start listening for 15 connections
         print(f"Server listening on port {port}...")
 
