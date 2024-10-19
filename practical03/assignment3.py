@@ -3,11 +3,14 @@ import socket
 import sys
 import threading
 import signal
+from time import sleep
 
 # Global variables
+pattern = ""  # Pattern to search for
 global_node_list = []  # List to store all nodes
 list_lock = threading.Lock()  # Lock for thread-safe access to global_node_list
 books_lock = threading.Lock()  # Lock for thread-safe access to book_map
+title_frequencies = {}
 
 server_socket = None  # Server socket
 shutdown_event = threading.Event()  # Event to signal shutdown
@@ -22,6 +25,13 @@ class Node:
         self.next = None  # Link to the next node
         self.book_next = None  # Link to the next item in the same book
         self.head = head  # Store the head of the book
+        self.checked = False  # Flag to check if the node has been checked
+
+
+class Book:
+    def __init__(self, pattern_count=0, last_node=None):
+        self.pattern_count = pattern_count
+        self.last_node = last_node
 
 
 class clientHandler(threading.Thread):
@@ -45,6 +55,8 @@ class clientHandler(threading.Thread):
     def addNode(self, title, line):
         """Add new node to list for given book title"""
         global global_node_list
+        global title_frequencies
+        global pattern
 
         # Create new node
         new_node = Node(line, self.head)
@@ -53,11 +65,17 @@ class clientHandler(threading.Thread):
             if self.head is None:
                 # First node of list, set as head
                 self.head = new_node
+                title = self.head.line.lstrip("\ufeff")[7:]  # Extract title from line
+
+                # Create new book object
+                new_book = Book(0, new_node)
+                title_frequencies[title] = new_book
             else:
                 # Link new node for the same book
                 current_node = self.head
                 while current_node.book_next is not None:
                     current_node = current_node.book_next
+
                 current_node.book_next = (
                     new_node  # Link new node to end of last node in book
                 )
@@ -70,6 +88,28 @@ class clientHandler(threading.Thread):
             finally:
                 index = len(global_node_list) - 1
                 title = self.head.line.lstrip("\ufeff")[7:]  # Extract title from line
+
+                # If new_node.line contains the pattern, increment the frequency in title_frequencies,
+                # Then update the address of the last node in the title_frequencies dictionary
+                pattern = pattern
+                if title_frequencies[title].last_node.checked:
+                    line = new_node.line
+                    if pattern in line:
+                        title_frequencies[title].pattern_count += 1
+                        title_frequencies[title].last_node = new_node
+                # elif not title_frequencies[title].last_node.checked:
+                else:
+                    # Check last node
+                    line = title_frequencies[title].last_node.line
+                    if pattern in line:
+                        title_frequencies[title].pattern_count += 1
+                        title_frequencies[title].last_node.checked = True
+                    line = new_node.line
+                    if pattern in line:
+                        title_frequencies[title].pattern_count += 1
+                        title_frequencies[title].last_node = new_node
+
+                new_node.checked = True
 
                 print(f"Node {index} added for book titled: {title}")
 
@@ -141,6 +181,41 @@ class clientHandler(threading.Thread):
             self.client_socket.close()
 
 
+class AnalysisThread(threading.Thread):
+    def __init__(self, thread_id):
+        threading.Thread.__init__(self)
+        self.thread_id = thread_id
+        self.daemon = True
+
+    def sort_by_frequency(self):
+        global title_frequencies
+        # Sort the title_frequencies dictionary by frequency
+        sorted_titles = sorted(
+            title_frequencies.items(), key=lambda x: x[1].pattern_count, reverse=True
+        )
+
+        # Create a new container ordered by the sorted results
+        sorted_titles = [(book.pattern_count, title.strip()) for title, book in sorted_titles]
+
+        return sorted_titles
+
+    def run(self):
+        global title_frequencies
+        while not shutdown_event.is_set():
+            with books_lock:
+                # Sort the title_frequencies dictionary by frequency
+                sorted_titles = self.sort_by_frequency()
+
+            # Print the sorted titles in the format
+            # "{rank} --> Book: {book_title}, Pattern: "{search_pattern}", Frequency: {frequency_count}"
+            if (self.thread_id == 0) and (sorted_titles != []):
+                print("-" * 80)
+                for rank, (frequency, title) in enumerate(sorted_titles, start=1):
+                    print(f"{rank} --> Book: {title}, Pattern: \"{pattern}\", Frequency: {frequency}")
+                print("-" * 80)
+            sleep(2) # Sleep for 5 seconds
+
+
 def shutdown_handler(sig, frame):
     try:
         print("\nShutting down server...")
@@ -153,9 +228,9 @@ def shutdown_handler(sig, frame):
         print("Server shutdown complete.")
         sys.exit(0)
 
-
 def main():
     global server_socket
+    global pattern
     parser = argparse.ArgumentParser()
     parser.add_argument("-l", "--port", type=int, help="Desired server port")
     parser.add_argument(
@@ -179,7 +254,7 @@ def main():
     if args.pattern is None:
         print("Please provide a pattern to search...", file=sys.stderr)
     else:
-        print(f"Pattern detected")
+        print(f"Pattern detected. Searching for: {args.pattern}")
         pattern = args.pattern
         valid_pattern = True
 
@@ -188,6 +263,11 @@ def main():
 
     # Set up signal handling for graceful shutdown
     signal.signal(signal.SIGINT, shutdown_handler)
+
+    # Start 4 AnalysisThreads
+    for i in range(4):
+        analysis_thread = AnalysisThread(thread_id = i)
+        analysis_thread.start()
 
     # Try to create a socket, bind, and listen
     try:

@@ -14,7 +14,7 @@
                 "-l",
                 "12345",
                 "-p",
-                "\"pattern\""
+                "happy"
             ],
             "justMyCode": false
         }

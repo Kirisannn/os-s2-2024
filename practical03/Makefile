@@ -1,7 +1,5 @@
 startServer:
-	./assignment3 -l 12345 -p "pattern"
-
-fullsend: sendA sendB sendC
+	./assignment3 -l 12345 -p "basic"
 
 sendA:
 	nc localhost 12345 -d 1 < input/Book_A.txt
