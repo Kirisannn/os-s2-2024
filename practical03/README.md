@@ -10,13 +10,13 @@
 To run the server, use the following command format in your shell terminal.
 
 ```
-./assignment03 -l <port> -p <pattern>
+./assignment3 -l <port> -p <pattern>
 ```
 
 Example:
 
 ```
-./assignment03 -l 12345 -p happy
+./assignment3 -l 12345 -p happy
 ```
 
 In the example above,
@@ -33,7 +33,7 @@ If you desire to check the entire output from the server, please redirect `stdou
 
 Example:
 ```
-./assignment03 -l 12345 -p happy > server.log
+./assignment3 -l 12345 -p happy > server.log
 ```
 
 You may find `server.log` in the root directory of the assignment.
